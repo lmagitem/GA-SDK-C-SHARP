@@ -1,11 +1,9 @@
 ﻿using System;
+using System.IO;
 #if UNITY
 using UnityEngine;
 using GameAnalyticsSDK.Net.Store;
 #endif
-using System.IO;
-using System.Text.RegularExpressions;
-using GameAnalyticsSDK.Net.Logging;
 #if WINDOWS_UWP || WINDOWS_WSA
 using Windows.System.Profile;
 using Windows.Security.ExchangeActiveSyncProvisioning;
@@ -15,112 +13,66 @@ using Windows.Foundation.Metadata;
 using Windows.Storage.Streams;
 #endif
 
-namespace GameAnalyticsSDK.Net.Device
-{
-	internal static class GADevice
-	{
+namespace GameAnalyticsSDK.Net.Device {
+  public static class GADevice {
 #if WINDOWS_UWP
         private const string _sdkWrapperVersion = "uwp 3.4.0";
 #elif WINDOWS_WSA
         private const string _sdkWrapperVersion = "wsa 3.4.0";
 #else
-        private const string _sdkWrapperVersion = "mono 3.4.0";
+    private const string _sdkWrapperVersion = "mono 3.4.0";
 #endif
 #if UNITY
-		private static readonly string _buildPlatform = UnityRuntimePlatformToString(Application.platform);
-		private static readonly string _deviceModel = SystemInfo.deviceType.ToString().ToLowerInvariant();
+		private static string _buildPlatform = UnityRuntimePlatformToString(Application.platform);
+		private static string _deviceModel = SystemInfo.deviceType.ToString().ToLowerInvariant();
 		private static string _writablepath = GAStore.InMemory ? "" : GetPersistentPath();
 #else
-        private static readonly string _buildPlatform = RuntimePlatformToString();
+    private static readonly string _buildPlatform = RuntimePlatformToString();
 #if WINDOWS_UWP || WINDOWS_WSA
-        private static readonly string _deviceModel = GetDeviceModel();
-        private static readonly string _advertisingId = AdvertisingManager.AdvertisingId;
+        private static string _deviceModel = GetDeviceModel();
+        private static string _advertisingId = AdvertisingManager.AdvertisingId;
         private static string _deviceId = GetDeviceId();
 #else
-        private static readonly string _deviceModel = "unknown";
+    private static readonly string _deviceModel = "unknown";
 #endif
-        private static string _writablepath = GetPersistentPath();
+    private static readonly string _writablepath = GetPersistentPath();
 #endif
-        private static readonly string _osVersion = GetOSVersionString();
+    private static readonly string _osVersion = GetOSVersionString();
 #if WINDOWS_UWP || WINDOWS_WSA
-        private static readonly string _deviceManufacturer = GetDeviceManufacturer();
+        private static string _deviceManufacturer = GetDeviceManufacturer();
 #else
-        private static readonly string _deviceManufacturer = "unknown";
+    private static readonly string _deviceManufacturer = "unknown";
 #endif
 
-        public static void Touch()
-		{
-		}
+    public static void Touch() { }
 
-		public static string SdkGameEngineVersion
-		{
-			private get;
-			set;
-		}
+    public static string SdkGameEngineVersion { private get; set; }
 
-		public static string GameEngineVersion
-		{
-			get;
-			set;
-		}
+    public static string GameEngineVersion { get; set; }
 
-		public static string ConnectionType
-		{
-			get;
-			set;
-		}
+    public static string ConnectionType { get; set; }
 
-		public static string RelevantSdkVersion
-		{
-			get
-			{
-				if(!string.IsNullOrEmpty(SdkGameEngineVersion))
-				{
-					return SdkGameEngineVersion;
-				}
-				return _sdkWrapperVersion;
-			}
-		}
+    public static string RelevantSdkVersion {
+      get {
+        if (!string.IsNullOrEmpty(SdkGameEngineVersion)) return SdkGameEngineVersion;
+        return _sdkWrapperVersion;
+      }
+    }
 
-		public static string BuildPlatform
-		{
-			get
-			{
-				return _buildPlatform;
-			}
-		}
+    public static string BuildPlatformOverride { get; set; }
+    public static string BuildPlatform => BuildPlatformOverride ?? _buildPlatform;
 
-		public static string OSVersion
-		{
-			get
-			{
-				return _osVersion;
-			}
-		}
+    public static string OsVersionOverride { get; set; }
+    public static string OSVersion => OsVersionOverride ?? _osVersion;
 
-		public static string DeviceModel
-		{
-			get
-			{
-				return _deviceModel;
-			}
-		}
+    public static string DeviceModelOverride { get; set; }
+    public static string DeviceModel => DeviceModelOverride ?? _deviceModel;
 
-		public static string DeviceManufacturer
-		{
-			get
-			{
-				return _deviceManufacturer;
-			}
-		}
+    public static string DeviceManufacturerOverride { get; set; }
+    public static string DeviceManufacturer => DeviceManufacturerOverride ?? _deviceManufacturer;
 
-		public static string WritablePath
-		{
-			get
-			{
-				return _writablepath;
-			}
-		}
+    public static string WritablePathOverride { get; set; }
+    public static string WritablePath => WritablePathOverride ?? _writablepath;
 
 #if WINDOWS_UWP
         public static string AdvertisingId
@@ -204,7 +156,8 @@ namespace GameAnalyticsSDK.Net.Device
 
         private static string GetPersistentPath()
         {
-            string result = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "GameAnalytics" + Path.DirectorySeparatorChar + System.AppDomain.CurrentDomain.FriendlyName;
+            string result =
+ Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "GameAnalytics" + Path.DirectorySeparatorChar + System.AppDomain.CurrentDomain.FriendlyName;
 
             if (!Directory.Exists(result))
             {
@@ -326,13 +279,12 @@ namespace GameAnalyticsSDK.Net.Device
             }
         }
 #else
-        public static void UpdateConnectionType()
-        {
-            ConnectionType = "lan";
-        }
+    public static void UpdateConnectionType() {
+      ConnectionType = "lan";
+    }
 
-		private static string GetOSVersionString()
-		{
+
+    private static string GetOSVersionString() {
 #if WINDOWS_UWP
             string deviceFamilyVersion = AnalyticsInfo.VersionInfo.DeviceFamilyVersion;
             ulong version = ulong.Parse(deviceFamilyVersion);
@@ -344,10 +296,11 @@ namespace GameAnalyticsSDK.Net.Device
             // Always 8.1 on Universal Windows 8.1
             return BuildPlatform + " 8";
 #else
-            Version v = Environment.OSVersion.Version;
-			return BuildPlatform + string.Format(" {0}.{1}.{2}", v.Major, v.Minor, v.Build);
+      var v = Environment.OSVersion.Version;
+      return BuildPlatform + string.Format(" {0}.{1}.{2}", v.Major, v.Minor, v.Build);
 #endif
-		}
+    }
+
 
 #if WINDOWS_UWP || WINDOWS_WSA
         private static string GetDeviceId()
@@ -448,67 +401,55 @@ namespace GameAnalyticsSDK.Net.Device
         }
 #endif
 #else
-        private static string RuntimePlatformToString()
-		{
-			switch(Environment.OSVersion.Platform)
-			{
-				case PlatformID.Unix:
-					{
-						// Well, there are chances MacOSX is reported as Unix instead of MacOSX.
-						// Instead of platform check, we'll do a feature checks (Mac specific root folders)
-						if(Directory.Exists("/Applications") && Directory.Exists("/System") && Directory.Exists("/Users") && Directory.Exists("/Volumes"))
-						{
-							return "mac_osx";
-						}
-						else
-						{
-							return "linux";
-						}
-					}
+    private static string RuntimePlatformToString() {
+      switch (Environment.OSVersion.Platform) {
+        case PlatformID.Unix: {
+          // Well, there are chances MacOSX is reported as Unix instead of MacOSX.
+          // Instead of platform check, we'll do a feature checks (Mac specific root folders)
+          if (Directory.Exists("/Applications") && Directory.Exists("/System") && Directory.Exists("/Users") && Directory.Exists("/Volumes")) return "mac_osx";
 
-				case PlatformID.MacOSX:
-					{
-						return "mac_osx";
-					}
-
-				case PlatformID.Win32NT:
-				case PlatformID.Win32S:
-				case PlatformID.Win32Windows:
-				case PlatformID.WinCE:
-					{
-						return "windows";
-					}
-
-				case PlatformID.Xbox:
-					{
-						return "xbox360";
-					}
-
-				default:
-					{
-						return "unknown";
-					}
-			}
-		}
-#endif
-
-        private static string GetPersistentPath()
-		{
-#if WINDOWS_UWP || WINDOWS_WSA
-            System.Threading.Tasks.Task<StorageFolder> gaFolderTask = System.Threading.Tasks.Task.Run<StorageFolder>(async() => await ApplicationData.Current.LocalFolder.CreateFolderAsync("GameAnalytics", CreationCollisionOption.OpenIfExists));
-            return gaFolderTask.GetAwaiter().GetResult().Path;
-#else
-            string result = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "GameAnalytics" + Path.DirectorySeparatorChar + System.AppDomain.CurrentDomain.FriendlyName;
-
-            if(!Directory.Exists(result))
-            {
-                Directory.CreateDirectory(result);
-            }
-
-            return result;
-#endif
+          return "linux";
         }
 
+        case PlatformID.MacOSX: {
+          return "mac_osx";
+        }
+
+        case PlatformID.Win32NT:
+        case PlatformID.Win32S:
+        case PlatformID.Win32Windows:
+        case PlatformID.WinCE: {
+          return "windows";
+        }
+
+        case PlatformID.Xbox: {
+          return "xbox360";
+        }
+
+        default: {
+          return "unknown";
+        }
+      }
+    }
+#endif
+
+
+    private static string GetPersistentPath() {
+#if WINDOWS_UWP || WINDOWS_WSA
+            System.Threading.Tasks.Task<StorageFolder> gaFolderTask =
+ System.Threading.Tasks.Task.Run<StorageFolder>(async() => await ApplicationData.Current.LocalFolder.CreateFolderAsync("GameAnalytics", CreationCollisionOption.OpenIfExists));
+            return gaFolderTask.GetAwaiter().GetResult().Path;
+#else
+      var result = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "GameAnalytics" + Path.DirectorySeparatorChar +
+                   AppDomain.CurrentDomain.FriendlyName;
+
+      if (!Directory.Exists(result)) Directory.CreateDirectory(result);
+
+      return result;
 #endif
     }
+
+
+#endif
+  }
 }
