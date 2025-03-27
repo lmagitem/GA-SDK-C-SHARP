@@ -1,4 +1,7 @@
-﻿using System;
+﻿#region
+
+
+using System;
 using System.Collections.Generic;
 using GameAnalyticsSDK.Net.Device;
 using GameAnalyticsSDK.Net.Events;
@@ -7,6 +10,11 @@ using GameAnalyticsSDK.Net.State;
 using GameAnalyticsSDK.Net.Store;
 using GameAnalyticsSDK.Net.Threading;
 using GameAnalyticsSDK.Net.Validators;
+
+
+#endregion
+
+
 #if WINDOWS_UWP || WINDOWS_WSA
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
@@ -717,9 +725,21 @@ namespace GameAnalyticsSDK.Net {
     #region PUBLIC HELPERS
 
 
+    public static string GetSessionId() {
+      if (_endThread) return null;
+      return string.IsNullOrEmpty(GAState.SessionId) ? string.Empty : GAState.SessionId;
+    }
+
+
     public static string GetUserId() {
       if (_endThread) return null;
-      return string.IsNullOrEmpty(GAState.Identifier) ? string.Empty : GAState.Identifier;
+      return string.IsNullOrEmpty(GAState.UserId) ? string.Empty : GAState.UserId;
+    }
+
+
+    public static string GetDefaultUserId() {
+      if (_endThread) return null;
+      return string.IsNullOrEmpty(GAState.Instance.DefaultUserId) ? string.Empty : GAState.Instance.DefaultUserId;
     }
 
 

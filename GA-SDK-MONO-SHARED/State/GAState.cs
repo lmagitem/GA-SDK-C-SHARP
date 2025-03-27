@@ -32,12 +32,12 @@ namespace GameAnalyticsSDK.Net.State {
     private static readonly Dictionary<string, int> countMap = new Dictionary<string, int>();
     private static readonly Dictionary<string, DateTime> timestampMap = new Dictionary<string, DateTime>();
 
-    private static GAState Instance { get; } = new GAState();
+    public static GAState Instance { get; } = new GAState();
 
     private string _userId;
 
     public static string UserId {
-      private get => Instance._userId;
+      get => Instance._userId;
       set {
         Instance._userId = value == null ? "" : value;
         CacheIdentifier();
@@ -230,7 +230,7 @@ namespace GameAnalyticsSDK.Net.State {
 
     private string _defaultUserId;
 
-    private string DefaultUserId {
+    public string DefaultUserId {
       get => Instance._defaultUserId;
       set {
         Instance._defaultUserId = value == null ? "" : value;
